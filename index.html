@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Login Form -->
+    <div id="loginForm" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Username</label>
+                    <input type="text" id="username" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Password</label>
+                    <input type="password" id="password" class="w-full p-2 border rounded" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold">Invoice System</h1>
+                        </div>
+                        <div class="ml-6 flex space-x-8">
+                            <button onclick="showCustomers()" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Customers</button>
+                            <button onclick="showInvoices()" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Invoices</button>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Customer List -->
+        <div id="customerList" class="max-w-7xl mx-auto mt-8 px-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Customers</h2>
+                <button onclick="showAddCustomerForm()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Add New Customer
+                </button>
+            </div>
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Customer Modal -->
+        <div id="addCustomerModal" class="modal">
+            <div class="modal-content bg-white mx-auto mt-20 p-6 rounded-lg shadow-lg max-w-2xl">
+                <h2 class="text-2xl font-bold mb-6">Add New Customer</h2>
+                <form id="addCustomerForm" onsubmit="handleAddCustomer(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Basic Information -->
+                        <div class="col-span-2">
+                            <h3 class="text-lg font-semibold mb-4">Basic Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Business Name *</label>
+                                    <input type="text" name="businessName" required class="w-full p-2 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Client Industry</label>
+                                    <input type="text" name="industry" class="w-full p-2 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Country</label>
+                                    <select name="country" class="w-full p-2 border rounded" id="countrySelect"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">City/Town</label>
+                                    <input type="text" name="city" class="w-full p-2 border rounded">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tax Information -->
+                        <div class="col-span-2">
+                            <h3 class="text-lg font-semibold mb-4">Tax Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Business GSTIN</label>
+                                    <input type="text" name="gstin" class="w-full p-2 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Business PAN Number</label>
+                                    <input type="text" name="pan" class="w-full p-2 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Client Type</label>
+                                    <select name="clientType" class="w-full p-2 border rounded">
+                                        <option value="Individual">Individual</option>
+                                        <option value="Company">Company</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="col-span-2">
+                            <h3 class="text-lg font-semibold mb-4">Address</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">State/Province</label>
+                                    <input type="text" name="state" class="w-full p-2 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Postal Code/ZIP</label>
+                                    <input type="text" name="postalCode" class="w-full p-2 border rounded">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-gray-700 mb-2">Street Address</label>
+                                    <input type="text" name="streetAddress" class="w-full p-2 border rounded">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Details -->
+                        <div class="col-span-2">
+                            <h3 class="text-lg font-semibold mb-4">Additional Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Business Email</label>
+                                    <input type="email" name="email" class="w-full p-2 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Mobile No.</label>
+                                    <input type="tel" name="mobile" class="w-full p-2 border rounded">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <button type="button" onclick="closeAddCustomerModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Customer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration
+        let customers = [];
+        let countries = ["United States", "Canada", "United Kingdom", "India", "Australia"];
+
+        // Initialize country select
+        function initializeCountrySelect() {
+            const select = document.getElementById('countrySelect');
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+        }
+
+        // Login handling
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Mock authentication
+            if (username === "admin" && password === "admin") {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                showCustomers();
+            } else {
+                alert("Invalid credentials!");
+            }
+        }
+
+        function logout() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+
+        // Customer management
+        function showCustomers() {
+            document.getElementById('customerList').style.display = 'block';
+            updateCustomerTable();
+        }
+
+        function showInvoices() {
+            document.getElementById('customerList').style.display = 'none';
+            // Invoice functionality to be implemented
+        }
+
+        function showAddCustomerForm() {
+            document.getElementById('addCustomerModal').style.display = 'block';
+        }
+
+        function closeAddCustomerModal() {
+            document.getElementById('addCustomerModal').style.display = 'none';
+        }
+
+        function handleAddCustomer(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const customer = Object.fromEntries(formData.entries());
+            customers.push(customer);
+            updateCustomerTable();
+            closeAddCustomerModal();
+            event.target.reset();
+        }
+
+        function updateCustomerTable() {
+            const tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+            customers.forEach((customer, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${customer.businessName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${customer.industry}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${customer.country}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${customer.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <button onclick="editCustomer(${index})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button onclick="deleteCustomer(${index})" class="text-red-600 hover:text-red-900">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteCustomer(index) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                customers.splice(index, 1);
+                updateCustomerTable();
+            }
+        }
+
+        function editCustomer(index) {
+            // To be implemented
+            alert('Edit functionality to be implemented');
+        }
+
+        // Initialize the application
+        window.onload = function() {
+            initializeCountrySelect();
+        };
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('addCustomerModal');
+            if (event.target === modal) {
+                closeAddCustomerModal();
+            }
+        };
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
